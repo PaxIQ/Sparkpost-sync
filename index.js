@@ -2,9 +2,9 @@ const axios = require("axios");
 const Joi = require("joi");
 
 const templateSchema = Joi.object().keys({
-  name: Joi.string(),
-  id: Joi.string(),
-  description: Joi.string().allow(''),
+  name: Joi.string().allow(""),
+  id: Joi.string().required(),
+  description: Joi.string().allow(""),
   published: Joi.bool(),
   has_draft: Joi.bool(),
   has_published: Joi.bool(),
@@ -14,18 +14,26 @@ const templateSchema = Joi.object().keys({
     transactional: Joi.bool(),
     click_tracking: Joi.bool()
   }),
-  content: Joi.object().required().keys({
-    from: Joi.alternatives().try(Joi.object().keys({
-      email: Joi.string().email(),
-      name: Joi.string()
-    }), Joi.string()).required(),
-    subject: Joi.string().required(),
-    reply_to: Joi.string(),
-    text: Joi.string(),
-    html: Joi.string(),
-    amp_html: Joi.string(),
-    headers: Joi.object()
-  })
+  content: Joi.object()
+    .required()
+    .keys({
+      from: Joi.alternatives()
+        .try(
+          Joi.object().keys({
+            email: Joi.string().email(),
+            name: Joi.string().allow("")
+          }),
+          Joi.string()
+        )
+        .required(),
+      subject: Joi.string().required(),
+      reply_to: Joi.string().allow(""),
+      text: Joi.string().allow(""),
+      html: Joi.string().allow(""),
+      amp_html: Joi.string().allow(""),
+      headers: Joi.object()
+    }),
+  changed: Joi.bool()
 });
 
 
@@ -66,9 +74,11 @@ const syncAll = (templates, apiKey) => {
     headers: { Authorization: apiKey }
   });
   return Promise.all(
-    templates.map(template => {
-      return api.put(`templates/${template.id}`, template);
-    })
+    templates
+      .filter(template => template.changed === true)
+      .map(template => {
+        return api.put(`templates/${template.id}`, template);
+      })
   ).catch(err => console.log(err));
 };
 
