@@ -9,15 +9,22 @@ const templateSchema = Joi.object().keys({
   has_draft: Joi.bool(),
   has_published: Joi.bool(),
   shared_with_subaccounts: Joi.bool(),
+  options: Joi.object().keys({
+    open_tracking: Joi.bool(),
+    transactional: Joi.bool(),
+    click_tracking: Joi.bool()
+  }),
   content: Joi.object().required().keys({
-    from: Joi.object().keys({
+    from: Joi.alternatives().try(Joi.object().keys({
       email: Joi.string().email(),
       name: Joi.string()
-    }),
-    subject: Joi.string(),
+    }), Joi.string()).required(),
+    subject: Joi.string().required(),
     reply_to: Joi.string(),
     text: Joi.string(),
-    html: Joi.string()
+    html: Joi.string(),
+    amp_html: Joi.string(),
+    headers: Joi.object()
   })
 });
 
