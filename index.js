@@ -23,7 +23,7 @@ const templateSchema = Joi.object().keys({
             email: Joi.string().email(),
             name: Joi.string().allow("")
           }),
-          Joi.string()
+          Joi.string().email()
         )
         .required(),
       subject: Joi.string().required(),
@@ -64,7 +64,7 @@ const syncAll = (templates, apiKey) => {
   for (let i = 0; i < templates.length; i++) {
     const { error } = Joi.validate(templates[i], templateSchema);
     if (error) {
-      console.log("Invalid template :: " + error);
+      console.log(`Invalid template at ${templates[i].id} :: ` + error);
       return error;
     }
   }
